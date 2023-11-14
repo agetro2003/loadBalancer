@@ -1,0 +1,36 @@
+syntax = "proto3";
+package demo;
+// The welcome service definition.
+service Crud {
+  // Sends a welcome
+  rpc create (Item) returns (Reply) {}
+  rpc read (Empty) returns (GetReply) {}
+  rpc update (Item) returns (Reply) {}
+  rpc del (DeleteRequest) returns (Reply) {};
+}
+
+// The request message containing the user's name.
+message Item {
+  int32 cod  = 1;
+  string descrip = 2;
+}
+
+message DeleteRequest {
+  int32 cod = 1;
+}
+
+// The response message containing the welcome
+message Reply {
+  string message = 1;
+  float freeMem = 2;
+  float freeCPU = 3;
+}
+
+message GetReply {
+  repeated Item data = 1;
+  float freeMem = 2;
+  float freeCPU = 3;
+}
+
+message Empty {}
+
