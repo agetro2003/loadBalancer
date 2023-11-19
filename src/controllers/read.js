@@ -1,8 +1,10 @@
 // const client = require("../../gRPC_cli");
 const { Worker } = require("node:worker_threads");
 
-function read(req, res) {
-  const worker = new Worker("./src/controllers/workerRead.js");
+function read(req, res, next) {
+  const worker = new Worker("./src/controllers/workerRead.js", {
+    workerData: req.service,
+  });
 
   worker.on("message", (response) => {
     // do something after end of task
@@ -11,7 +13,8 @@ function read(req, res) {
     //   `\u001b[1;32mDone \u001b[0m${time.getMinutes()}:${time.getSeconds()}:${time.getMilliseconds()}`
     // );
     // console.log(worker.threadId);
-    res.status(200).json(response);
+    req.response = response;
+    next();
   });
 
   worker.on("error", (err) => {
