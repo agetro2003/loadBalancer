@@ -1,7 +1,7 @@
-const client = require("../../gRPC_cli");
+const clients = require("../../gRPC_cli");
 
 function read (req, res, next) {
-
+    let client = clients[req.service]
  client.read({}, function(err, response) {
     //console.log(response)
     req.response = response
