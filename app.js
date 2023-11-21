@@ -51,7 +51,7 @@ app.use((req, res, next) => {
           serviceWinner = key;
         }
       }
-      scores[serviceWinner] += 4;
+      scores[serviceWinner] += 1;
     }
     if (key == "cpuCapacity") {
       let winner = customObject.client1.cpuCapacity;
@@ -63,7 +63,7 @@ app.use((req, res, next) => {
         }
       }
 
-      scores[serviceWinner] += 3;
+      scores[serviceWinner] += 1;
     }
     if (key == "ramCapacity") {
       let winner = customObject.client1.ramCapacity;
@@ -75,7 +75,7 @@ app.use((req, res, next) => {
         }
       }
 
-      scores[serviceWinner] += 3;
+      scores[serviceWinner] += 1;
     }
     if (key == "activeProcess") {
       let winner = customObject.client1.activeProcess;
@@ -87,7 +87,7 @@ app.use((req, res, next) => {
           serviceWinner = key;
         }
       }
-      scores[serviceWinner] += 3;
+      scores[serviceWinner] += 1;
     }
   }
 
@@ -102,6 +102,7 @@ app.use((req, res, next) => {
   req.service = serviceWinner;
   customObject[req.service].activeProcess += 1;
   req.initialTime = Date.now();
+  // console.log(scores);
   next();
 });
 
@@ -110,9 +111,9 @@ app.use(require("./src/routes/routes"));
 app.use((req, res) => {
   // console.log(req);
   const response = req.response;
-  console.log(response);
+  // console.log(response);
   console.log(req.service);
-  console.log(customObject);
+  // console.log(customObject);
   customObject[req.service].cpuCapacity = response.freeCPU;
   customObject[req.service].ramCapacity = response.freeMem;
   customObject[req.service].activeProcess -= 1;

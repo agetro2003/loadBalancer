@@ -2,7 +2,7 @@ const clients = require("../../gRPC_cli");
 const { parentPort, workerData } = require("worker_threads");
 
 const req = workerData;
-console.log(req);
+// console.log(req);
 let client = clients[req];
 
 client.read({}, function (err, response) {
