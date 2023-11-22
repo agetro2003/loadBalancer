@@ -30,6 +30,7 @@ message GetReply {
   repeated Item data = 1;
   float freeMem = 2;
   float freeCPU = 3;
+  string table = 4;
 }
 
 message Empty {}

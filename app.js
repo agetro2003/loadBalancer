@@ -1,7 +1,8 @@
 const express = require("express");
 const cors = require("cors");
-const { Worker } = require("node:worker_threads");
-// const cluster = require("node:cluster");
+const Service = require("./Service");
+const LoadBalancer = require("./loadBalancer");
+const fs = require("fs");
 
 const port = 4000;
 
@@ -11,118 +12,73 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 
-let customObject = {
-  client1: {
-    id: "client1",
-    latency: 0,
-    cpuCapacity: 1,
-    ramCapacity: 1000000000000,
-    activeProcess: 0,
-  },
-  client2: {
-    id: "client2",
-    latency: 0,
-    cpuCapacity: 1,
-    ramCapacity: 1000000000000,
-    activeProcess: 0,
-  },
-  client3: {
-    id: "client3",
-    latency: 0,
-    cpuCapacity: 1,
-    ramCapacity: 1000000000000,
-    activeProcess: 0,
-  },
-};
+const services = [
+  new Service("client1"),
+  new Service("client2"),
+  new Service("client3"),
+];
+
+const loadBalancer = new LoadBalancer(services);
 
 app.use((req, res, next) => {
-  let scores = {
-    client1: 0,
-    client2: 0,
-    client3: 0,
-  };
-  for (const key in customObject.client1) {
-    if (key == "latency") {
-      let winner = customObject.client1.latency;
-      let serviceWinner = "client1";
-      for (const key in customObject) {
-        if (customObject[key].latency < winner) {
-          winner = customObject[key].latency;
-          serviceWinner = key;
-        }
-      }
-      scores[serviceWinner] += 1;
-    }
-    if (key == "cpuCapacity") {
-      let winner = customObject.client1.cpuCapacity;
-      let serviceWinner = "client1";
-      for (const key in customObject) {
-        if (customObject[key].cpuCapacity > winner) {
-          winner = customObject[key].cpuCapacity;
-          serviceWinner = key;
-        }
-      }
-
-      scores[serviceWinner] += 1;
-    }
-    if (key == "ramCapacity") {
-      let winner = customObject.client1.ramCapacity;
-      let serviceWinner = "client1";
-      for (const key in customObject) {
-        if (customObject[key].ramCapacity > winner) {
-          winner = customObject[key].ramCapacity;
-          serviceWinner = key;
-        }
-      }
-
-      scores[serviceWinner] += 1;
-    }
-    if (key == "activeProcess") {
-      let winner = customObject.client1.activeProcess;
-      let serviceWinner = "client1";
-
-      for (const key in customObject) {
-        if (customObject[key].activeProcess < winner) {
-          winner = customObject[key].activeProcess;
-          serviceWinner = key;
-        }
-      }
-      scores[serviceWinner] += 1;
-    }
-  }
-
-  let serviceWinner = "client1";
-  // console.log(scores);
-  for (const key in scores) {
-    if (scores[key] >= scores[serviceWinner]) {
-      serviceWinner = key;
-    }
-  }
-
-  req.service = serviceWinner;
-  customObject[req.service].activeProcess += 1;
-  req.initialTime = Date.now();
-  // console.log(scores);
-  next();
+  loadBalancer.processRequest(req, res, next);
 });
 
-app.use(require("./src/routes/routes"));
-
 app.use((req, res) => {
-  // console.log(req);
   const response = req.response;
-  // console.log(response);
-  console.log(req.service);
-  // console.log(customObject);
-  customObject[req.service].cpuCapacity = response.freeCPU;
-  customObject[req.service].ramCapacity = response.freeMem;
-  customObject[req.service].activeProcess -= 1;
-  customObject[req.service].latency = Date.now() - req.initialTime;
-  console.log(customObject);
+
+  console.log("Response: ", response);
+  const selectedService = loadBalancer.services.find(
+    (service) => service.id === req.service
+  );
+
+  selectedService.freeCpu = response.freeCPU;
+  selectedService.freeRam = response.freeMem;
+  selectedService.totalProcesses++;
+  selectedService.activeProcesses--;
+  selectedService.latency = Date.now() - req.initialTime;
+
+  // Prepare log entry
+  const logEntry =
+    [
+      selectedService.id,
+      req.initialTime,
+      Date.now(),
+      selectedService.activeProcesses,
+      selectedService.totalProcesses,
+      response.table,
+    ].join("\t |\t") + "\n";
+
+  // Append log entry to log.txt
+  fs.appendFile("log.txt", logEntry, (err) => {
+    if (err) throw err;
+  });
+
+  // console.log(loadBalancer.services);
   res.status(200).json({ msg: "ok" });
 });
 
-app.listen(port, (req, res) => {
-  console.log(`Server running on port \u001b[1;32m${port} \u001b[0m`);
-  // console.log(`\u001b[1;32m worker` + "\u001b[0m started");
+app.listen(port, () => {
+  const headers = [
+    "service",
+    "initial_time",
+    "final_time",
+    "active_processes",
+    "total_processes",
+    "selected_table",
+  ];
+
+  const headerRow = headers.join("\t |\t");
+  const dividerRow = "-".repeat(headerRow.length + 10);
+
+  const tableHeader = `${headerRow}\n${dividerRow}\n`;
+
+  fs.writeFile("log.txt", tableHeader, (err) => {
+    if (err) {
+      console.error("Error creating log file:", err);
+    } else {
+      console.log("Log file created successfully");
+      console.log(`Server running on port \u001b[1;32m${port} \u001b[0m`);
+    }
+  });
 });
