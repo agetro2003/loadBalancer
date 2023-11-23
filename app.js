@@ -24,7 +24,9 @@ app.use((req, res, next) => {
   loadBalancer.processRequest(req, res, next);
 });
 
+var counter = 0;
 app.use((req, res) => {
+  counter++;
   const response = req.response;
 
   console.log("Response: ", response);
@@ -41,6 +43,7 @@ app.use((req, res) => {
   // Prepare log entry
   const logEntry =
     [
+      counter,
       selectedService.id,
       req.initialTime,
       Date.now(),
@@ -60,6 +63,7 @@ app.use((req, res) => {
 
 app.listen(port, () => {
   const headers = [
+    "counter",
     "service",
     "initial_time",
     "final_time",
