@@ -29,7 +29,7 @@ app.use((req, res) => {
   counter++;
   const response = req.response;
 
-  console.log("Response: ", response);
+  // console.log("Response: ", response);
   const selectedService = loadBalancer.services.find(
     (service) => service.id === req.service
   );

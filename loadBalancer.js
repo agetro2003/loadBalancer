@@ -17,14 +17,12 @@ class LoadBalancer {
         service.score++;
       }
       if (
-        service.freeCpu ===
-        Math.max(...this.services.map((s) => s.cpuCapacity))
+        service.freeCpu === Math.max(...this.services.map((s) => s.freeCpu))
       ) {
         service.score++;
       }
       if (
-        service.freeRam ===
-        Math.max(...this.services.map((s) => s.ramCapacity))
+        service.freeRam === Math.max(...this.services.map((s) => s.freeRam))
       ) {
         service.score++;
       }
@@ -41,10 +39,20 @@ class LoadBalancer {
       (service) => service.score === maxScore
     );
 
-    const winningService =
-      potentialWinners[Math.floor(Math.random() * potentialWinners.length)];
+    // Create an object with the scores of all services
+    const scores = {};
 
+    this.services.forEach((service) => {
+      scores[service.id] = service.score;
+    });
+
+    
+    const winningService =
+    potentialWinners[Math.floor(Math.random() * potentialWinners.length)];
+    
     console.log("Winner: ", winningService.id);
+    console.log("Scores: ", scores);
+    console.log("Services: ", this.services);
     winningService.activeProcesses++;
 
     req.service = winningService.id;
