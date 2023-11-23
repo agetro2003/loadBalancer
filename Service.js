@@ -1,6 +1,7 @@
 class Service {
-  constructor(id) {
+  constructor(id, url) {
     this.id = id;
+    this.url = url;
     this.latency = 0;
     this.freeCpu = 1;
     this.freeRam = 1000000000000;

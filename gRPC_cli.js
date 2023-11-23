@@ -11,23 +11,7 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 });
 const demo_proto = grpc.loadPackageDefinition(packageDefinition).demo;
 
-const client1 = new demo_proto.Crud(
-  "localhost:50051",
-  grpc.credentials.createInsecure()
-);
-
-const client2 = new demo_proto.Crud(
-  "localhost:50052",
-  grpc.credentials.createInsecure()
-);
-
-const client3 = new demo_proto.Crud(
-  "localhost:50053",
-  grpc.credentials.createInsecure()
-);
-
 module.exports = {
-  client1,
-  client2,
-  client3,
+  demo_proto,
+  grpc
 };

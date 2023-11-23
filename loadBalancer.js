@@ -46,10 +46,9 @@ class LoadBalancer {
       scores[service.id] = service.score;
     });
 
-    
     const winningService =
-    potentialWinners[Math.floor(Math.random() * potentialWinners.length)];
-    
+      potentialWinners[Math.floor(Math.random() * potentialWinners.length)];
+
     console.log("Winner: ", winningService.id);
     console.log("Scores: ", scores);
     console.log("Services: ", this.services);
@@ -65,7 +64,7 @@ class LoadBalancer {
     const selectedService = this.decideWinner(req);
 
     const worker = new Worker("./src/controllers/workerRead.js", {
-      workerData: selectedService.id,
+      workerData: selectedService.url,
     });
 
     worker.on("message", (response) => {

@@ -13,9 +13,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 
 const services = [
-  new Service("client1"),
-  new Service("client2"),
-  new Service("client3"),
+  new Service("Server1", "localhost:50051"),
+  new Service("Server2", "192.168.137.90:50052"),
+  new Service("Server3", "localhost:50053"),
+
 ];
 
 const loadBalancer = new LoadBalancer(services);
